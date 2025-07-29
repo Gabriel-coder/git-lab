@@ -1,3 +1,1 @@
-linha 1
-linha 2
-linha 3 (nova branch)
+linha conflitante (master)
