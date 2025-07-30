@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/minha-imagem-ci
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,5 +17,17 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Teste do pipeline
-        run: echo "Pipeline funcionando!"
+      - name: Login no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build da imagem Docker
+        run: |
+          docker build -t $IMAGE_NAME:latest .
+
+      - name: Push da imagem para GHCR
+        run: |
+          docker push $IMAGE_NAME:latest
