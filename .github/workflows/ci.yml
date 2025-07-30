@@ -7,7 +7,6 @@ on:
   pull_request:
 
 env:
-  # Nome da imagem no GitHub Container Registry (será convertido para minúsculas)
   IMAGE_NAME: ghcr.io/${{ github.repository }}/minha-imagem-ci
 
 jobs:
@@ -45,15 +44,8 @@ jobs:
         run: |
           IMAGE=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
           ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            # Login no GHCR
             docker login ghcr.io -u $GITHUB_ACTOR -p ${{ secrets.GHCR_TOKEN }}
-
-            # Baixar a versão mais recente da imagem
             docker pull $IMAGE:latest
-
-            # Parar e remover container antigo, se existir
             docker stop app || true && docker rm app || true
-
-            # Rodar o container na porta 80
             docker run -d --name app -p 80:3000 $IMAGE:latest
           EOF
