@@ -6,8 +6,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Deploy na EC2 com rollback
+      - name: Deploy na EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -15,22 +16,7 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             set -e
-            echo "Guardando imagem atual (rollback)"
-            CURRENT_IMAGE=$(docker ps --filter "name=app" --format "{{.Image}}")
-
-            echo "Pull da nova imagem"
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
-
-            echo "Parando e removendo container atual"
             docker stop app || true
             docker rm app || true
-
-            echo "Subindo novo container"
-            if ! docker run -d --name app -p 80:3000 ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest; then
-              echo "Falha no novo container, restaurando a imagem anterior"
-              if [ -n "$CURRENT_IMAGE" ]; then
-                docker run -d --name app -p 80:3000 $CURRENT_IMAGE
-              fi
-              exit 1
-            fi
-# trigger
+            docker run -d --name app -p 80:3000 ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
