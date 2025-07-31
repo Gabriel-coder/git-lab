@@ -1,51 +1,67 @@
-name: CI/CD Pipeline
+name: CI/CD - Node.js Docker
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-
-env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/minha-imagem-ci
+    branches: [ "main" ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout do código
+      # 1. Clona o repositório
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Login no GHCR
-        uses: docker/login-action@v3
+      # 2. Instala dependências do Node.js
+      - name: Install dependencies
+        run: npm install
+
+      # 3. Executa testes (se falhar, pipeline para aqui)
+      - name: Run tests
+        run: npm test
+
+      # 4. Build da imagem Docker
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest .
+
+      # 5. Login no Docker Hub
+      - name: Login Docker Hub
+        uses: docker/login-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build e Push da imagem Docker
+      # 6. Push para o Docker Hub
+      - name: Push Docker image
         run: |
-          IMAGE=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
-          docker build -t $IMAGE:latest .
-          docker push $IMAGE:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
+      # 7. Deploy na EC2 com rollback
+      - name: Deploy na EC2 com rollback
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            set -e
+            echo "Guardando imagem atual (rollback)"
+            CURRENT_IMAGE=$(docker ps --filter "name=app" --format "{{.Image}}")
 
-    steps:
-      - name: Criar arquivo da chave privada
-        run: |
-          echo "${{ secrets.EC2_KEY }}" > private_key.pem
-          chmod 600 private_key.pem
+            echo "Pull da nova imagem"
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
 
-      - name: Deploy na EC2
-        run: |
-          IMAGE=$(echo "${IMAGE_NAME}" | tr '[:upper:]' '[:lower:]')
-          ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << EOF
-            docker login ghcr.io -u $GITHUB_ACTOR -p ${{ secrets.GHCR_TOKEN }}
-            docker pull $IMAGE:latest
-            docker stop app || true && docker rm app || true
-            docker run -d --name app -p 80:3000 $IMAGE:latest
-          EOF
+            echo "Parando e removendo container atual"
+            docker stop app || true
+            docker rm app || true
+
+            echo "Subindo novo container"
+            if ! docker run -d --name app -p 80:3000 ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest; then
+              echo "Falha no novo container, restaurando a imagem anterior"
+              if [ -n "$CURRENT_IMAGE" ]; then
+                docker run -d --name app -p 80:3000 $CURRENT_IMAGE
+              fi
+              exit 1
+            fi
