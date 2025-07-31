@@ -1,12 +1,12 @@
-const http = require('http');
-
+const express = require('express');
+const app = express();
 const PORT = 3000;
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Deploy CI/CD funcionando via GitHub Actions + EC2 + Docker!\n');
+// Rota principal
+app.get('/', (req, res) => {
+  res.send('Aplicação Node.js com Express rodando via CI/CD!');
 });
 
-server.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
