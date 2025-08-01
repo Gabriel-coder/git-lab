@@ -20,3 +20,4 @@ jobs:
             --cluster ecs-lab-cluster \
             --service ecs-lab-task-service \
             --force-new-deployment
+# força redeploy
