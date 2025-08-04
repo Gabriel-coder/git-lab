@@ -32,3 +32,9 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
+
+      - name: Trigger CD pipeline
+        uses: benc-uk/workflow-dispatch@v1
+        with:
+          workflow: CD - Deploy na EC2
+          token: ${{ secrets.GITHUB_TOKEN }}
