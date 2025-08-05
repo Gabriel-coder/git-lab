@@ -2,7 +2,7 @@ name: CD - Deploy App
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   deploy:
