@@ -4,7 +4,7 @@ const PORT = 3000;
 
 // Rota principal
 app.get('/', (req, res) => {
-  res.send('Aplicação Node.js com Express rodando via CI/CD!');
+  res.send('Aplicação Node.js com Express rodando via CI/CD parabens!');
 });
 
 app.listen(PORT, () => {

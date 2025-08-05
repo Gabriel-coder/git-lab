@@ -1,33 +1,16 @@
-name: CI/CD Node App
+name: CD - Deploy App
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout do código
-      uses: actions/checkout@v4
+      - name: Checkout do código
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Instalar dependências
-      run: npm install
-
-    - name: Rodar testes
-      run: echo "Sem testes definidos ainda"
-
-    - name: Build da imagem Docker
-      run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/node-app:latest .
-
-    - name: Login no Docker Hub
-      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-    - name: Push da imagem
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/node-app:latest
+      - name: Simulação de deploy
+        run: echo "✅ Deploy concluído com sucesso!"

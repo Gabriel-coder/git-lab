@@ -1,22 +1,25 @@
-name: CD - Deploy na EC2
+name: CD - Deploy local
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [ master ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy na EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_KEY }}
-          script: |
-            set -e
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
-            docker stop app || true
-            docker rm app || true
-            docker run -d --name app -p 80:3000 ${{ secrets.DOCKERHUB_USERNAME }}/git-lab:latest
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Login no Docker Hub
+        run: echo "${{ secrets.DOCKER_PASS }}" | docker login -u "${{ secrets.DOCKER_USER }}" --password-stdin
+
+      - name: Pull da imagem
+        run: docker pull ${{ secrets.DOCKER_USER }}/node-app:latest
+
+      - name: Subir o container
+        run: |
+          docker stop node-app || true
+          docker rm node-app || true
+          docker run -d -p 3000:3000 --name node-app ${{ secrets.DOCKER_USER }}/node-app:latest
