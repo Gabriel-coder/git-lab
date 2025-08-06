@@ -1,29 +1,32 @@
+# .github/workflows/cd-ecs.yml
+
 name: CD - Deploy ECS
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
     paths:
-      - 'terraform/**'
-      - '.github/workflows/cd-ecs.yml'
+      - terraform/**
+      - .github/workflows/cd-ecs.yml
 
 jobs:
   deploy-ecs:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout código
+      - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Configurar AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          terraform_version: 1.8.4
 
-      - name: Atualizar ECS service
-        run: |
-          aws ecs update-service \
-            --cluster ecs-lab-cluster \
-            --service ecs-lab-service \
-            --force-new-deployment
+      - name: Inicializar Terraform
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Aplicar infraestrutura ECS
+        working-directory: ./terraform
+        run: terraform apply -auto-approve
