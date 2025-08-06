@@ -1,11 +1,11 @@
+// app.js
 const express = require('express');
 const app = express();
-const port = 3000;
 
-// Simula erro de sintaxe (faltando parêntese)
 app.get('/', (req, res) => {
-  res.send('Erro proposital para teste de rollback';
+  res.send('App atualizado para testes de CI e CD separados!');
+});
 
-app.listen(port, () => {
-  console.log(`App quebrado rodando na porta ${port}`);
+app.listen(3000, () => {
+  console.log('Servidor rodando na porta 3000');
 });
