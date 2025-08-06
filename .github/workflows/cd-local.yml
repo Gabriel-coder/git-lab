@@ -1,32 +1,24 @@
-# .github/workflows/cd-local.yml
-
 name: CD - Deploy local
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
     paths:
-      - terraform/**
-      - .github/workflows/cd-local.yml
+      - 'terraform/**'
+      - '.github/workflows/cd-local.yml'
 
 jobs:
   deploy-local:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Instalar Terraform
+      - name: Instala Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.4
 
-      - name: Inicializar Terraform
-        working-directory: ./terraform
-        run: terraform init
+      - name: Inicializa Terraform
+        run: terraform -chdir=terraform init
 
-      - name: Aplicar infraestrutura
-        working-directory: ./terraform
-        run: terraform apply -auto-approve
+      - name: Aplica infraestrutura local
+        run: terraform -chdir=terraform apply -auto-approve

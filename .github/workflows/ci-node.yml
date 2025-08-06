@@ -1,32 +1,23 @@
-# .github/workflows/ci-node.yml
-
 name: CI - Node.js
 
 on:
   push:
-    branches:
-      - main
+    branches: [ "main" ]
     paths:
-      - '**.js'
-      - package.json
-      - package-lock.json
-      - .github/workflows/ci-node.yml
+      - 'app.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/ci-node.yml'
 
 jobs:
-  node-ci:
+  test-node:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Instalar dependências
+      - name: Instala dependências
         run: npm install
 
-      - name: Rodar aplicação para testes (simples)
+      - name: Testa app
         run: node app.js
