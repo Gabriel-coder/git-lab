@@ -1,15 +1,11 @@
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const port = 3000;
 
-// Rota principal
+// Simula erro de sintaxe (faltando parêntese)
 app.get('/', (req, res) => {
-  res.send('Aplicação Node.js com Express rodando via CI/CD parabens!');
-});
+  res.send('Erro proposital para teste de rollback';
 
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+app.listen(port, () => {
+  console.log(`App quebrado rodando na porta ${port}`);
 });
-// teste de CI/CD automático
-// alteração teste CI
-// alteração teste CI
