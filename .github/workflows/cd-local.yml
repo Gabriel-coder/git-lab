@@ -1,0 +1,21 @@
+name: CD - Deploy local
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'app.js'
+      - 'Dockerfile'
+
+jobs:
+  deploy-local:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Build e rodar localmente
+        run: |
+          docker build -t local-node-app .
+          docker run -d -p 3000:3000 local-node-app

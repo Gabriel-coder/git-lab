@@ -3,25 +3,27 @@ name: CD - Deploy ECS
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'terraform/**'
+      - '.github/workflows/cd-ecs.yml'
 
 jobs:
-  deploy:
+  deploy-ecs:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout do código
+      - name: Checkout código
         uses: actions/checkout@v4
 
-      - name: Configurar credenciais AWS
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Configurar AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Atualizar serviço ECS
+      - name: Atualizar ECS service
         run: |
           aws ecs update-service \
             --cluster ecs-lab-cluster \
-            --service node-app-service \
+            --service ecs-lab-service \
             --force-new-deployment
